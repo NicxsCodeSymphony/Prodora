@@ -73,10 +73,6 @@ Here's what makes Prodoro your perfect productivity partner:
 
 We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
 ## 📬 Contact
 
 Have questions? Reach out to us:
@@ -86,5 +82,5 @@ Have questions? Reach out to us:
 ---
 
 <div align="center">
-Made with ❤️ by the Prodoro Team
+Made with ❤️ by John Nico M. Edisan
 </div>

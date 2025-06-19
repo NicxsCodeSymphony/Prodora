@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Image, Dimensions, TextInput, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import * as LocalAuthentication from 'expo-local-authentication';
-import * as FileSystem from 'expo-file-system';
-import { Theme } from '@/constants/Theme';
 import Button from '@/components/ui/Button';
+import { Theme } from '@/constants/Theme';
+import * as FileSystem from 'expo-file-system';
+import * as LocalAuthentication from 'expo-local-authentication';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { Alert, Dimensions, Image, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -17,6 +17,8 @@ export default function Setup(){
     const [confirmPin, setConfirmPin] = useState('');
     const [isConfirming, setIsConfirming] = useState(false);
     const [savedPin, setSavedPin] = useState('');
+    const [hasError, setHasError] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
 
     useEffect(() => {
         checkExistingPin();
@@ -166,9 +168,29 @@ export default function Setup(){
                     </View>
                     <View style={styles.pinContainer}>
                         <TextInput
-                            style={styles.pinInput}
+                            style={[
+                                styles.pinInput,
+                                hasError && styles.pinInputError,
+                                isSuccess && styles.pinInputSuccess
+                            ]}
                             value={pin}
-                            onChangeText={setPin}
+                            onChangeText={(text) => {
+                                setPin(text);
+                                setHasError(false);
+                                setIsSuccess(false);
+                                if (text.length === 6) {
+                                    // Automatically authenticate when 6 digits are entered
+                                    if (text === savedPin) {
+                                        setIsSuccess(true);
+                                        setTimeout(() => {
+                                            router.replace('/(tabs)');
+                                        }, 1000); // Wait 1 second before routing
+                                    } else {
+                                        setHasError(true);
+                                        setPin('');
+                                    }
+                                }
+                            }}
                             keyboardType="numeric"
                             maxLength={6}
                             secureTextEntry
@@ -176,14 +198,16 @@ export default function Setup(){
                             placeholderTextColor={Theme.colors.textSecondary}
                             textAlign="center"
                         />
-                    </View>
-                    <View style={styles.buttonContainer}>
-                        <Button 
-                            title="Login" 
-                            onPress={handlePinLogin}
-                            variant="primary"
-                            style={styles.button}
-                        />
+                        {hasError && (
+                            <Text style={styles.errorText}>
+                                Incorrect PIN. Please try again.
+                            </Text>
+                        )}
+                        {isSuccess && (
+                            <Text style={styles.successText}>
+                                PIN correct! Redirecting...
+                            </Text>
+                        )}
                     </View>
                 </View>
             </SafeAreaView>
@@ -211,7 +235,11 @@ export default function Setup(){
                     </View>
                     <View style={styles.pinContainer}>
                         <TextInput
-                            style={styles.pinInput}
+                            style={[
+                                styles.pinInput,
+                                hasError && styles.pinInputError,
+                                isSuccess && styles.pinInputSuccess
+                            ]}
                             value={isConfirming ? confirmPin : pin}
                             onChangeText={isConfirming ? setConfirmPin : setPin}
                             keyboardType="numeric"
@@ -221,6 +249,16 @@ export default function Setup(){
                             placeholderTextColor={Theme.colors.textSecondary}
                             textAlign="center"
                         />
+                        {hasError && (
+                            <Text style={styles.errorText}>
+                                Incorrect PIN. Please try again.
+                            </Text>
+                        )}
+                        {isSuccess && (
+                            <Text style={styles.successText}>
+                                PIN correct! Redirecting...
+                            </Text>
+                        )}
                     </View>
                     <View style={styles.buttonContainer}>
                         <Button 
@@ -291,6 +329,24 @@ const styles = StyleSheet.create({
         color: Theme.colors.textPrimary,
         textAlign: 'center',
         backgroundColor: Theme.colors.surface,
+    },
+    pinInputError: {
+        borderColor: Theme.colors.error || '#ff0000',
+    },
+    pinInputSuccess: {
+        borderColor: Theme.colors.success || '#00c853',
+    },
+    errorText: {
+        color: Theme.colors.error || '#ff0000',
+        fontSize: Math.max(14, width * 0.035),
+        marginTop: Theme.spacing.sm,
+        textAlign: 'center',
+    },
+    successText: {
+        color: Theme.colors.success || '#00c853',
+        fontSize: Math.max(14, width * 0.035),
+        marginTop: Theme.spacing.sm,
+        textAlign: 'center',
     },
     buttonContainer: {
         alignItems: 'center',
