@@ -1,5 +1,10 @@
 export type AppRoute = 
   | '/(features)/focus'
+  | '/auth/AccountAuth'
+  | '/(features)/account'
+  | '/(features)/financial'
+  | '/(features)/calendar'
+  | '/(features)/budget'
   | null;
 
 export interface Feature {
@@ -26,7 +31,7 @@ export const features: Feature[] = [
     description: 'Track your expenses & budget',
     icon: '💰',
     color: '#4ECDC4',
-    route: null,
+    route: '/(features)/financial',
   },
   {
     id: 3,
@@ -34,7 +39,7 @@ export const features: Feature[] = [
     description: 'Never miss important dates',
     icon: '⏰',
     color: '#45B7D1',
-    route: null,
+    route: '/auth/AccountAuth',
   },
   {
     id: 4,

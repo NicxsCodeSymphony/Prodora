@@ -1,24 +1,17 @@
 export const Theme = {
   colors: {
-    // Primary Colors
-    primary: '#FFA94D', // Light Orange - Main buttons, highlights, progress bars
-    primaryDarker: '#FF8F1F', // Deep Orange - Button hover, headers, CTA emphasis
-    
-    // Accent Colors
-    accent: '#FFE0B2', // Peach - Secondary elements, cards, icons
-    
-    // Background Colors
-    background: '#FFFDF9', // Off-White - App background
-    surface: '#FFFFFF', // White - Panels, cards, modals
-    
-    // Text Colors
-    textPrimary: '#2C2C2C', // Charcoal Gray - Headings, main content
-    textSecondary: '#707070', // Medium Gray - Labels, placeholders
-    
-    // Status Colors
-    success: '#4CAF50', // Soft Green - Task complete, confirmations
-    warning: '#FFD54F', // Light Amber - Reminders, approaching deadlines
-    error: '#F44336', // Coral Red - Errors, failed inputs
+    primary: '#FF6B6B',
+    primaryDarker: '#FF5252',
+    accent: '#4ECDC4',
+    background: '#F7F7F7',
+    surface: '#FFFFFF',
+    surfaceHighlight: '#F8F9FA',
+    textPrimary: '#2D3436',
+    textSecondary: '#636E72',
+    success: '#00B894',
+    warning: '#FDCB6E',
+    error: '#D63031',
+    border: '#E9ECEF',
   },
   
   spacing: {
