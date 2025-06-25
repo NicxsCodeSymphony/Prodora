@@ -1,5 +1,6 @@
 import { Theme } from '@/constants/Theme';
 import { styles } from '@/css/financial.styles';
+import { Budget, Category, Transaction } from '@/types/budget';
 import { FileSystemManager } from '@/utils/fileSystemManager';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -9,7 +10,6 @@ import {
     Alert,
     Animated,
     DeviceEventEmitter,
-    Dimensions,
     FlatList,
     Modal,
     Platform,
@@ -18,46 +18,12 @@ import {
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    View,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const { width } = Dimensions.get('window');
-
-interface Transaction extends BaseEntity {
-    type: 'income' | 'expense';
-    category: string;
-    amount: number;
-    date: string;
-    description: string;
-}
-
-interface BaseEntity {
-    id: string;
-    createdAt: number;
-    updatedAt?: number;
-}
-
-interface Category extends BaseEntity {
-    name: string;
-    type: 'income' | 'expense';
-    icon?: string;
-}
-
-interface Budget extends BaseEntity {
-    title: string;
-    category: string;
-    targetAmount: number;
-    currentAmount: number;
-    targetDate: string;
-    priority: 'high' | 'medium' | 'low';
-    note?: string;
-    status: 'active' | 'completed' | 'archived';
-    completedAt?: string;
-}
 
 export default function Financial() {
-    const [selectedPeriod, setSelectedPeriod] = useState<'day' | 'week' | 'month'>('month');
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [modalType, setModalType] = useState<'income' | 'expense'>('income');
@@ -73,9 +39,6 @@ export default function Financial() {
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
     const [isTransactionDetailsVisible, setIsTransactionDetailsVisible] = useState(false);
     const [showCategoryPicker, setShowCategoryPicker] = useState(false);
-    const [selectedTab, setSelectedTab] = useState<'overview' | 'transactions' | 'budget' | 'insights'>('overview');
-    const [scrollY] = useState(new Animated.Value(0));
-    const [dateRange, setDateRange] = useState<'week' | 'month' | 'year'>('month');
     const [budgets, setBudgets] = useState<Budget[]>([]);
     const [isTypePickerVisible, setIsTypePickerVisible] = useState(false);
     const [selectedType, setSelectedType] = useState<'income' | 'expense' | null>(null);
@@ -87,14 +50,13 @@ export default function Financial() {
     const transactionManager = new FileSystemManager<Transaction>('transactions.json');
     const categoryManager = new FileSystemManager<Category>('categories.json');
     const budgetManager = new FileSystemManager<Budget>('budgets.json');
-    const router = useRouter();
+    const router = useRouter(); 
 
     useEffect(() => {
         initializeAndLoadTransactions();
         initializeAndLoadCategories();
         initializeAndLoadBudgets();
 
-        // Add listener for transaction updates
         const transactionSubscription = DeviceEventEmitter.addListener(
             'transactionUpdated',
             (newTransaction: Transaction) => {
@@ -102,7 +64,6 @@ export default function Financial() {
             }
         );
 
-        // Cleanup subscription
         return () => {
             transactionSubscription.remove();
         };
@@ -402,7 +363,7 @@ export default function Financial() {
                 {!hasBudgets && balance > 0 && (
                     <TouchableOpacity 
                         style={styles.createBudgetPrompt}
-                        onPress={() => router.push('/(features)/budget')}
+                        onPress={() => router.push('/(features)/financial/budget')}
                     >
                         <Text style={styles.createBudgetText}>
                             Start budgeting your ₱{balance.toFixed(2)}
@@ -629,7 +590,7 @@ export default function Financial() {
                     <Text style={styles.sectionTitle}>Priority Goals</Text>
                     <TouchableOpacity 
                         style={styles.viewAllButton}
-                        onPress={() => router.push('/(features)/budget')}
+                        onPress={() => router.push('/(features)/financial/budget')}
                     >
                         <Text style={styles.viewAllText}>See All</Text>
                         <Ionicons name="chevron-forward" size={16} color={Theme.colors.primary} />
@@ -718,7 +679,7 @@ export default function Financial() {
                             <Text style={styles.emptyBudgetsText}>No active budget goals</Text>
                             <TouchableOpacity 
                                 style={styles.addBudgetButton}
-                                onPress={() => router.push('/(features)/budget')}
+                                onPress={() => router.push('/(features)/financial/budget')}
                             >
                                 <Text style={styles.addBudgetText}>Create a Goal</Text>
                             </TouchableOpacity>
@@ -874,8 +835,8 @@ export default function Financial() {
                         <Text style={styles.sectionTitle}>Recent Activity</Text>
                         <TouchableOpacity 
                             style={styles.viewAllButton}
-                            onPress={() => router.push('/(features)/transactions')}
-                        >
+                            onPress={() => router.push('/(features)/financial/transactions')}
+                        >   
                             <Text style={styles.viewAllText}>See More</Text>
                             <Ionicons name="chevron-forward" size={16} color={Theme.colors.primary} />
                         </TouchableOpacity>
