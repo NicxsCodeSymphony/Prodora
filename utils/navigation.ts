@@ -3,8 +3,7 @@ export type AppRoute =
   | '/auth/AccountAuth'
   | '/(features)/account'
   | '/(features)/financial'
-  | '/(features)/calendar'
-  | '/(features)/budget'
+  | '/(features)/task'
   | null;
 
 export interface Feature {
@@ -47,7 +46,7 @@ export const features: Feature[] = [
     description: 'Organize your daily tasks',
     icon: '✅',
     color: '#96CEB4',
-    route: null,
+    route: '/(features)/task',
   },
   {
     id: 5,

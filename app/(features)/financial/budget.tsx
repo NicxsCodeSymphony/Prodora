@@ -1,53 +1,16 @@
+import { AddBudgetModal, CategoryPickerModal, DeleteConfirmModal, UpdateBudgetModal } from '@/components/modals/BudgetModals';
+import { ErrorModal } from '@/components/modals/ErrorModal';
 import { Theme } from '@/constants/Theme';
 import { styles } from '@/css/budget.styles';
+import { Budget, Category, Transaction } from '@/types/budget';
 import { FileSystemManager } from '@/utils/fileSystemManager';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useEffect, useState } from 'react';
-import {
-    Alert,
-    DeviceEventEmitter,
-    FlatList,
-    Modal,
-    Platform,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
-} from 'react-native';
+import { Alert, DeviceEventEmitter, FlatList, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-interface BaseEntity {
-    id: string;
-    createdAt: number;
-    updatedAt?: number;
-}
 
-interface Budget extends BaseEntity {
-    title: string;
-    category: string;
-    targetAmount: number;
-    currentAmount: number;
-    targetDate: string;
-    note?: string;
-    status: 'active' | 'completed' | 'archived';
-    completedAt?: string;
-}
-
-interface Category extends BaseEntity {
-    name: string;
-    type: 'income' | 'expense';
-}
-
-interface Transaction extends BaseEntity {
-    type: 'income' | 'expense';
-    category: string;
-    amount: number;
-    date: string;
-    description: string;
-}
-
-export default function Budget() {
+export default function BudgetScreen() {
     const [budgets, setBudgets] = useState<Budget[]>([]);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -200,6 +163,7 @@ export default function Budget() {
                 targetDate: targetDate.toISOString(),
                 note,
                 status: 'active',
+                priority: 'medium',
             });
 
             setBudgets([...budgets, newBudget]);
@@ -460,48 +424,6 @@ export default function Budget() {
         );
     };
 
-    const ErrorModal = () => {
-        if (!error) return null;
-
-        return (
-            <Modal
-                visible={!!error}
-                transparent
-                animationType="fade"
-                onRequestClose={() => setError(null)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <View style={styles.modalHeader}>
-                            <Text style={[
-                                styles.modalTitle,
-                                error.type === 'error' ? styles.errorTitle : styles.successTitle
-                            ]}>
-                                {error.title}
-                            </Text>
-                            <TouchableOpacity
-                                onPress={() => setError(null)}
-                                style={styles.closeButton}
-                            >
-                                <Ionicons name="close" size={24} color={Theme.colors.textSecondary} />
-                            </TouchableOpacity>
-                        </View>
-                        <Text style={styles.errorMessage}>{error.message}</Text>
-                        <TouchableOpacity
-                            style={[
-                                styles.submitButton,
-                                { backgroundColor: error.type === 'error' ? Theme.colors.error : Theme.colors.success }
-                            ]}
-                            onPress={() => setError(null)}
-                        >
-                            <Text style={styles.submitButtonText}>OK</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-        );
-    };
-
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
@@ -622,261 +544,54 @@ export default function Budget() {
                 )}
             />
 
-            <ErrorModal />
+            <ErrorModal
+                visible={!!error}
+                onClose={() => setError(null)}
+                error={error}
+            />
 
-            <Modal
+            <AddBudgetModal
                 visible={isModalVisible}
-                transparent
-                animationType="slide"
-                onRequestClose={() => setIsModalVisible(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Add Budget Goal</Text>
-                            <TouchableOpacity
-                                onPress={() => setIsModalVisible(false)}
-                                style={styles.closeButton}
-                            >
-                                <Ionicons name="close" size={24} color={Theme.colors.textSecondary} />
-                            </TouchableOpacity>
-                        </View>
+                onClose={() => setIsModalVisible(false)}
+                title={title}
+                category={category}
+                targetAmount={targetAmount}
+                currentAmount={currentAmount}
+                note={note}
+                targetDate={targetDate}
+                showDatePicker={showDatePicker}
+                onTitleChange={setTitle}
+                onShowCategoryPicker={() => setShowCategoryPicker(true)}
+                onTargetAmountChange={setTargetAmount}
+                onCurrentAmountChange={setCurrentAmount}
+                onNoteChange={setNote}
+                onDateChange={handleDateChange}
+                onShowDatePicker={() => setShowDatePicker(true)}
+                onSubmit={handleAddBudget}
+            />
 
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Goal Title"
-                            value={title}
-                            onChangeText={setTitle}
-                            placeholderTextColor={Theme.colors.textSecondary}
-                        />
-
-                        <TouchableOpacity
-                            style={[styles.input, styles.categorySelector]}
-                            onPress={() => setShowCategoryPicker(true)}
-                        >
-                            <Text style={category ? styles.categoryText : styles.placeholderText}>
-                                {category || 'Select Category'}
-                            </Text>
-                            <Ionicons 
-                                name="chevron-down" 
-                                size={20} 
-                                color={Theme.colors.textSecondary} 
-                            />
-                        </TouchableOpacity>
-
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Target Amount"
-                            value={targetAmount}
-                            onChangeText={setTargetAmount}
-                            keyboardType="numeric"
-                            placeholderTextColor={Theme.colors.textSecondary}
-                        />
-
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Current Amount"
-                            value={currentAmount}
-                            onChangeText={setCurrentAmount}
-                            keyboardType="numeric"
-                            placeholderTextColor={Theme.colors.textSecondary}
-                        />
-
-                        <TouchableOpacity
-                            style={styles.datePickerButton}
-                            onPress={() => setShowDatePicker(true)}
-                        >
-                            <Ionicons name="calendar-outline" size={20} color={Theme.colors.textSecondary} />
-                            <Text style={styles.datePickerButtonText}>
-                                {targetDate.toLocaleDateString()}
-                            </Text>
-                        </TouchableOpacity>
-
-                        {showDatePicker && (
-                            <DateTimePicker
-                                value={targetDate}
-                                mode="date"
-                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                                onChange={handleDateChange}
-                                minimumDate={new Date()}
-                            />
-                        )}
-
-                        <TextInput
-                            style={[styles.input, styles.noteInput]}
-                            placeholder="Note (optional)"
-                            value={note}
-                            onChangeText={setNote}
-                            multiline
-                            placeholderTextColor={Theme.colors.textSecondary}
-                        />
-
-                        <TouchableOpacity
-                            style={[styles.submitButton, { backgroundColor: Theme.colors.primary }]}
-                            onPress={handleAddBudget}
-                        >
-                            <Text style={styles.submitButtonText}>Add Goal</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            </Modal>
-
-            <Modal
+            <UpdateBudgetModal
                 visible={isUpdateModalVisible}
-                transparent
-                animationType="slide"
-                onRequestClose={() => setIsUpdateModalVisible(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Update Progress</Text>
-                            <TouchableOpacity
-                                onPress={() => setIsUpdateModalVisible(false)}
-                                style={styles.closeButton}
-                            >
-                                <Ionicons name="close" size={24} color={Theme.colors.textSecondary} />
-                            </TouchableOpacity>
-                        </View>
+                onClose={() => setIsUpdateModalVisible(false)}
+                budget={selectedBudget}
+                currentAmount={currentAmount}
+                onCurrentAmountChange={setCurrentAmount}
+                onUpdateProgress={handleUpdateProgress}
+            />
 
-                        {selectedBudget && (
-                            <>
-                                <Text style={styles.updateTitle}>{selectedBudget.title}</Text>
-                                <Text style={styles.updateTarget}>
-                                    Target: ₱{selectedBudget.targetAmount.toFixed(2)}
-                                </Text>
-                                <Text style={styles.updateTarget}>
-                                    Current: ₱{selectedBudget.currentAmount.toFixed(2)}
-                                </Text>
-                                <Text style={styles.updateTarget}>
-                                    Remaining: ₱{(selectedBudget.targetAmount - selectedBudget.currentAmount).toFixed(2)}
-                                </Text>
-                                
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Enter Amount"
-                                    value={currentAmount}
-                                    onChangeText={setCurrentAmount}
-                                    keyboardType="numeric"
-                                    placeholderTextColor={Theme.colors.textSecondary}
-                                />
-
-                                <View style={styles.updateButtons}>
-                                    <TouchableOpacity
-                                        style={[styles.submitButton, { backgroundColor: Theme.colors.error, flex: 1, marginRight: 5 }]}
-                                        onPress={() => handleUpdateProgress('subtract')}
-                                    >
-                                        <Text style={styles.submitButtonText}>Subtract Cash</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={[styles.submitButton, { backgroundColor: Theme.colors.success, flex: 1, marginLeft: 5 }]}
-                                        onPress={() => handleUpdateProgress('add')}
-                                    >
-                                        <Text style={styles.submitButtonText}>Add Cash</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </>
-                        )}
-                    </View>
-                </View>
-            </Modal>
-
-            <Modal
+            <CategoryPickerModal
                 visible={showCategoryPicker}
-                transparent
-                animationType="slide"
-                onRequestClose={() => setShowCategoryPicker(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Select Category</Text>
-                            <TouchableOpacity
-                                onPress={() => setShowCategoryPicker(false)}
-                                style={styles.closeButton}
-                            >
-                                <Ionicons name="close" size={24} color={Theme.colors.textSecondary} />
-                            </TouchableOpacity>
-                        </View>
+                onClose={() => setShowCategoryPicker(false)}
+                categories={categories}
+                selectedCategory={category}
+                onSelectCategory={setCategory}
+            />
 
-                        <FlatList
-                            data={categories}
-                            keyExtractor={item => item.id}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity
-                                    style={styles.categoryPickerItem}
-                                    onPress={() => {
-                                        setCategory(item.name);
-                                        setShowCategoryPicker(false);
-                                    }}
-                                >
-                                    <Text style={[
-                                        styles.categoryPickerText,
-                                        category === item.name && styles.categoryPickerTextSelected
-                                    ]}>
-                                        {item.name}
-                                    </Text>
-                                    {category === item.name && (
-                                        <Ionicons 
-                                            name="checkmark" 
-                                            size={24} 
-                                            color={Theme.colors.primary} 
-                                        />
-                                    )}
-                                </TouchableOpacity>
-                            )}
-                            ListEmptyComponent={() => (
-                                <Text style={styles.noCategoriesText}>
-                                    No categories available
-                                </Text>
-                            )}
-                        />
-                    </View>
-                </View>
-            </Modal>
-
-            <Modal
+            <DeleteConfirmModal
                 visible={showDeleteConfirm}
-                transparent
-                animationType="fade"
-                onRequestClose={() => setShowDeleteConfirm(false)}
-            >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Delete Budget</Text>
-                            <TouchableOpacity
-                                onPress={() => setShowDeleteConfirm(false)}
-                                style={styles.closeButton}
-                            >
-                                <Ionicons name="close" size={24} color={Theme.colors.textSecondary} />
-                            </TouchableOpacity>
-                        </View>
-
-                        <Text style={styles.deleteConfirmText}>
-                            Are you sure you want to delete this budget goal?
-                        </Text>
-                        <Text style={styles.deleteWarningText}>
-                            This action cannot be undone.
-                        </Text>
-
-                        <View style={styles.deleteActions}>
-                            <TouchableOpacity
-                                style={[styles.deleteButton, styles.cancelButton]}
-                                onPress={() => setShowDeleteConfirm(false)}
-                            >
-                                <Text style={styles.cancelButtonText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.deleteButton, styles.confirmButton]}
-                                onPress={() => selectedBudget && handleDeleteBudget(selectedBudget)}
-                            >
-                                <Text style={styles.confirmButtonText}>Delete</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={() => selectedBudget && handleDeleteBudget(selectedBudget)}
+            />
         </SafeAreaView>
     );
 } 
