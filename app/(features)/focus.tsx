@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Dimensions, Animated, TextInput, ScrollView, AppState } from 'react-native';
 import { Theme } from '@/constants/Theme';
-import Svg, { Circle } from 'react-native-svg';
-import { showNotification, updateNotification, cancelAllNotifications } from '@/utils/notifications';
-import * as Notifications from 'expo-notifications';
-import { router } from 'expo-router';
+import { cancelAllNotifications, showNotification, updateNotification } from '@/utils/notifications';
 import * as FileSystem from 'expo-file-system';
+import * as Notifications from 'expo-notifications';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, AppState, Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
 

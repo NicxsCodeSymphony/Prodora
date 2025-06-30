@@ -4,6 +4,7 @@ export type AppRoute =
   | '/(features)/account'
   | '/(features)/financial'
   | '/(features)/task'
+  | '/(features)/notes'
   | null;
 
 export interface Feature {
@@ -54,7 +55,7 @@ export const features: Feature[] = [
     description: 'Quick notes & reminders',
     icon: '📝',
     color: '#FFEAA7',
-    route: null,
+    route: '/(features)/notes',
   },
   {
     id: 6,
